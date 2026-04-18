@@ -1,0 +1,45 @@
+ASYNCAT OSS - PROJECT REVIEW REPORT
+====================================
+
+OVERVIEW
+--------
+Asyncat is a powerful, AI-first workspace designed for solo users and teams. It is currently in a transition state from a Supabase-backed SaaS product to a fully self-hosted, offline-capable Open Source project using SQLite.
+
+HOW TO RUN THE PROJECT
+----------------------
+The project uses a unified CLI manager called `cat`.
+
+1. Setup: Run `./cat install` (Checks Node.js 20+, installs deps, creates .env files).
+2. Config: Edit `den/.env`. The standard local setup requires:
+   - JWT_SECRET: (Essential for Auth)
+   - AI_API_KEY: (Essential for AI features)
+   - AI_MODEL: (Essential for AI features)
+3. Start: Run `./cat start`.
+   - Backend: http://localhost:3000
+   - Frontend: http://localhost:5173
+4. Health: Run `./cat doctor` to verify system health.
+
+CORE FEATURES
+-------------
+* AI Command Center: Streaming chat with tool calling (managed via toolExecutor.js).
+* Study Lab: Flashcards (SM-2 SRS), active recall quizzes, and mind maps.
+* Kanban & Projects: Drag-and-drop boards, Gantt charts, network graphs, and dependencies.
+* Collaborative Notes: Multi-user block editor with versioning and persistent history.
+* Habit Tracker: Gamified habits with XP, streaks, and leaderboards.
+* Calendar: Project-integrated events, recurrence, and reminders.
+* Built-in Local AI: Integrated llama-server manager for running GGUF models locally.
+* MCP Integration: Full Model Context Protocol implementation for external AI agents.
+* Multi-Tenant: Supports "Solo Mode" (SQLite) and "Server Mode" (Team hosting).
+
+POTENTIAL BUGS & TRANSITION RISKS
+---------------------------------
+* Database Layer (compat.js): The shim layer mimicking Supabase syntax over SQLite is clever but has limited OR query support and optimistic JSON detection which might fail on complex text.
+* AI Tool Errors: Parameter validation in `toolExecutor.js` is minimal; invalid date strings or IDs from the AI can cause request failures.
+* Documentation Drift: The package-level READMEs (den/neko) still reference Legacy Supabase requirements, while the core app has been migrated to SQLite/Local Auth. Users should follow the root README.md.
+* Roadmap Gaps: Graceful degradation for models without tool-calling support is still in progress.
+
+CODEBASE STRUCTURE
+------------------
+* /cat  - The master CLI controller (REPL + Commands).
+* /den  - Node.js backend monolith (Express + Better-SQLite3).
+* /neko - React 19 frontend (Vite 6 + Tailwind 4).
