@@ -32,4 +32,4 @@ export const setupThemeListener = () => {
 };
 
 // API base URL for self-hosted build
-export const AUTH_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+export const AUTH_URL = import.meta.env.VITE_API_URL || 'http://localhost:8716';

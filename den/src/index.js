@@ -46,12 +46,12 @@ import { seed } from './db/seed.js';     // auto-seeds solo user on first boot
 
 // ─── App setup ────────────────────────────────────────────────────────────────
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8716;
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
+  'http://localhost:8717',
+  'http://localhost:8716',
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
@@ -149,7 +149,7 @@ seed().then(() => {
   const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`den running on port ${PORT}`);
     console.log(`environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`frontend: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+    console.log(`frontend: ${process.env.FRONTEND_URL || 'http://localhost:8717'}`);
   });
 
   const shutdown = (signal) => {

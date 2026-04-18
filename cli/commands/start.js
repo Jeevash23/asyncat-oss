@@ -23,8 +23,14 @@ function run(args = []) {
 
   if (!frontendOnly) {
     info('Starting backend  → ' + col('white', 'http://localhost:8716'));
-    startProc('backend',  'den',  'npm', ['run', 'dev'], 'cyan');
+    info('Backend auto-restart watches den/src, den/.env, and den/package.json');
+    startProc('backend', 'den', 'npm', ['start'], 'cyan', {
+      watchPaths: ['src', '.env', 'package.json'],
+      watchLabel: 'backend changes',
+      intervalMs: 1000,
+    });
   }
+
   if (!backendOnly) {
     info('Starting frontend → ' + col('white', 'http://localhost:8717'));
     startProc('frontend', 'neko', 'npm', ['run', 'dev'], 'magenta');

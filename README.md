@@ -67,7 +67,7 @@ Everything else has working defaults for a single-user local setup.
 ./cat start
 ```
 
-Opens backend at `http://localhost:3000` and frontend at `http://localhost:5173`.
+Opens backend at `http://localhost:8716` and frontend at `http://localhost:8717`.
 
 ---
 
@@ -79,7 +79,7 @@ All commands run from the `asyncat-oss` root:
 |---|---|
 | `./cat install` | Check deps, set up `.env` files, install packages, detect/install llama.cpp |
 | `./cat start` | Start backend + frontend together in dev mode |
-| `./cat stop` | Stop all running services (ports 3000, 5173, 8765) |
+| `./cat stop` | Stop all running services (ports 8716, 8717, 8765) |
 | `./cat status` | Show what's currently running |
 
 ---

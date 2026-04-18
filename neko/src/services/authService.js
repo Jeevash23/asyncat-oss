@@ -2,7 +2,7 @@
 import { getToken, setToken, clearToken } from '../auth/supabaseClient';
 import { performCompleteLogout } from '../utils/logoutUtils';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8716';
 
 class AuthService {
   constructor() {
@@ -26,6 +26,7 @@ class AuthService {
     }
     try {
       const res  = await fetch(`${API_BASE}/api/auth/me`, {
+        cache: 'no-store',
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -123,6 +124,7 @@ class AuthService {
 
     try {
       const res = await fetch(`${API_BASE}/api/auth/me`, {
+        cache: 'no-store',
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) { clearToken(); return null; }
@@ -167,6 +169,7 @@ class AuthService {
     const isFormData = options.body instanceof FormData;
     return fetch(url, {
       ...options,
+      cache: options.cache ?? 'no-store',
       headers: {
         ...(!isFormData && { 'Content-Type': 'application/json' }),
         Authorization: `Bearer ${token}`,

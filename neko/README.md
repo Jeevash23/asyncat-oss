@@ -43,7 +43,7 @@ Key variables:
 
 | Variable | Description |
 |---|---|
-| `VITE_API_URL` | URL of the den backend (e.g. `http://localhost:3000`) |
+| `VITE_API_URL` | URL of the den backend (e.g. `http://localhost:8716`) |
 | `VITE_SUPABASE_URL` | Your Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Your Supabase anon key |
 
@@ -53,7 +53,7 @@ Key variables:
 npm run dev
 ```
 
-App runs at `http://localhost:5173` by default.
+App runs at `http://localhost:8717` by default.
 
 ### Build (production)
 

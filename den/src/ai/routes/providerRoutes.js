@@ -40,6 +40,15 @@ const LLAMA_MODEL_ID = 'local'; // model id reported to the OpenAI-compat client
 
 const router = express.Router();
 
+router.use((_req, res, next) => {
+  res.set({
+    'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+  });
+  next();
+});
+
 // ── GET /detect — probe all well-known local ports ────────────────────────────
 router.get('/detect', verifyUser, async (req, res) => {
   try {

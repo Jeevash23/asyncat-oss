@@ -1,7 +1,7 @@
 // teams/teamApi.js — workspace / team-member API helpers
 import authService from '../services/authService';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8716';
 
 export const teamMembersApi = {
   // GET /api/teams/:teamId/members

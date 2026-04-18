@@ -98,15 +98,15 @@ function run() {
   if (fs.existsSync(path.join(ROOT, 'neko/node_modules'))) pass('neko/node_modules exists');
   else fail(`neko/node_modules missing — run ${col('cyan', 'install')}`);
 
-  // 9. Port 3000 free or backend running
-  const backendRunning = (procs.backend !== null) || portRunning(3000);
-  if (backendRunning) pass('Port 3000 in use (backend running)');
-  else pass('Port 3000 free');
+  // 9. Port 8716 free or backend running
+  const backendRunning = (procs.backend !== null) || portRunning(8716);
+  if (backendRunning) pass('Port 8716 in use (backend running)');
+  else pass('Port 8716 free');
 
-  // 10. Port 5173 free or frontend running
-  const frontendRunning = (procs.frontend !== null) || portRunning(5173);
-  if (frontendRunning) pass('Port 5173 in use (frontend running)');
-  else pass('Port 5173 free');
+  // 10. Port 8717 free or frontend running
+  const frontendRunning = (procs.frontend !== null) || portRunning(8717);
+  if (frontendRunning) pass('Port 8717 in use (frontend running)');
+  else pass('Port 8717 free');
 
   // 11. Port 8765 free or llama-server running
   const llamaRunning = portRunning(8765);

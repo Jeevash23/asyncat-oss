@@ -15,8 +15,11 @@ import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
+import { fileURLToPath } from 'url';
 
 const execAsync = promisify(exec);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PYTHON_WRAPPER_PATH = path.resolve(__dirname, '../../../../scripts/llama_cpp_server_wrapper.py');
 
 const LLAMA_PORT      = parseInt(process.env.LLAMA_SERVER_PORT  ?? '8765', 10);
 const LLAMA_HOST      = '127.0.0.1';
@@ -199,7 +202,9 @@ export async function startServer(modelFilename, modelsDir, ctxSizeOverride) {
 
   const cpuCount   = os.cpus().length;
   const nThreads   = process.env.LLAMA_THREADS    ?? String(Math.max(1, cpuCount - 1));
-  const nGpuLayers = process.env.LLAMA_GPU_LAYERS ?? '999';
+  // Default to CPU-only unless the user explicitly opts into GPU offload.
+  // This avoids startup failures on builds without a working Metal/CUDA backend.
+  const nGpuLayers = process.env.LLAMA_GPU_LAYERS ?? '0';
   const ctxSize    = ctxSizeOverride ? String(ctxSizeOverride) : (process.env.LLAMA_CTX_SIZE ?? '8192');
 
   emit({
@@ -208,7 +213,11 @@ export async function startServer(modelFilename, modelsDir, ctxSizeOverride) {
     error:     null,
     pid:       null,
     startedAt: new Date().toISOString(),
-    logLines:  [`[asyncat] Starting ${binInfo.binary}`, `[asyncat] Model: ${modelPath}`],
+    logLines:  [
+      `[asyncat] Starting ${binInfo.binary}`,
+      `[asyncat] Model: ${modelPath}`,
+      `[asyncat] GPU layers: ${nGpuLayers}`,
+    ],
     ctxSize:   parseInt(ctxSize, 10),
   });
 
@@ -216,7 +225,7 @@ export async function startServer(modelFilename, modelsDir, ctxSizeOverride) {
 
   if (binInfo.isPython) {
     proc = spawn('python3', [
-      '-m', 'llama_cpp.server',
+      PYTHON_WRAPPER_PATH,
       '--model',         modelPath,
       '--host',          LLAMA_HOST,
       '--port',          String(LLAMA_PORT),
@@ -307,17 +316,22 @@ async function waitUntilReady() {
 
   const err = 'Model load timed out (3 min). The model may be too large for your hardware, or try a smaller quantization (Q4_K_M instead of Q8).';
   emit({ status: 'error', error: err });
-  await stopServer().catch(() => {});
+  await stopServer({ preserveState: true }).catch(() => {});
 }
 
 /**
  * Stop the running llama-server process gracefully.
  * Safe to call when already stopped.
  */
-export async function stopServer() {
+export async function stopServer(options = {}) {
+  const { preserveState = false } = options;
   const proc = state.proc;
   state.proc = null;
-  emit({ status: 'idle', model: null, pid: null, error: null, ctxTrain: null, ctxSize: null });
+  if (preserveState) {
+    emit({ pid: null });
+  } else {
+    emit({ status: 'idle', model: null, pid: null, error: null, ctxTrain: null, ctxSize: null });
+  }
 
   if (!proc) return;
 
@@ -340,8 +354,14 @@ function classifyError(logs, exitCode) {
   if (/corrupted or incomplete|data is not within the file bounds/i.test(logs)) {
     return 'CORRUPTED: The model file is incomplete or corrupted (the download was cut short). Delete it and re-download from Settings → Local Models.';
   }
-  if (/out of memory|failed to allocate|CUDA error.*out of memory/i.test(logs)) {
+  if (/failed to create command queue|ggml_metal_init|backend_metal|failed to initialize the context: failed to initialize +backend/i.test(logs)) {
+    return 'BACKEND_INIT: llama.cpp backend initialization failed. If you are using GPU offload, set LLAMA_GPU_LAYERS=0 in den/.env. Otherwise try a newer llama.cpp or llama-cpp-python build.';
+  }
+  if (/out of memory|CUDA error.*out of memory|std::bad_alloc|cannot allocate memory|failed to allocate (buffer|tensor|memory)/i.test(logs)) {
     return 'OOM: Not enough VRAM/RAM to load this model. Try a smaller quantization (Q4_K_M) or a smaller model.';
+  }
+  if (/Failed to create llama_context/i.test(logs)) {
+    return 'INIT: llama.cpp failed to initialize this model context. Try a different GGUF, a newer llama.cpp or llama-cpp-python build, or a smaller model.';
   }
   if (/address already in use/i.test(logs)) {
     return 'PORT: Port 8765 is already in use. Stop any other llama-server instance and try again.';

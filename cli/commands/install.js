@@ -49,6 +49,47 @@ function prompt(question) {
   });
 }
 
+function ensureNativeRuntimeDeps() {
+  const runtimeInstalls = [];
+
+  // npm 11 can skip platform-specific optional packages on Apple Silicon.
+  // Install the native runtimes explicitly so Vite/Rollup and Sharp boot reliably.
+  if (process.platform === 'darwin' && process.arch === 'arm64') {
+    const rollupRuntime = path.join(ROOT, 'node_modules/@rollup/rollup-darwin-arm64');
+    if (!fs.existsSync(rollupRuntime)) {
+      runtimeInstalls.push({
+        label: 'Rollup native runtime',
+        cmd: 'npm install --no-save --no-package-lock @rollup/rollup-darwin-arm64',
+      });
+    }
+
+    const sharpRuntime = path.join(ROOT, 'node_modules/@img/sharp-darwin-arm64');
+    const sharpLibvips = path.join(ROOT, 'node_modules/@img/sharp-libvips-darwin-arm64');
+    if (!fs.existsSync(sharpRuntime) || !fs.existsSync(sharpLibvips)) {
+      runtimeInstalls.push({
+        label: 'Sharp native runtime',
+        cmd: 'npm install --no-save --no-package-lock @img/sharp-darwin-arm64 @img/sharp-libvips-darwin-arm64',
+      });
+    }
+  }
+
+  if (runtimeInstalls.length === 0) return;
+
+  log('');
+  log(col('bold', '  Repairing native runtime packages...'));
+  log('');
+
+  for (const install of runtimeInstalls) {
+    info(`Installing ${install.label}...`);
+    try {
+      execSync(install.cmd, { cwd: ROOT, stdio: 'ignore' });
+      ok(`${install.label} installed`);
+    } catch (_) {
+      warn(`Could not install ${install.label}. If startup fails, rerun ${col('dim', install.cmd)} from the repo root.`);
+    }
+  }
+}
+
 async function checkLlama(python) {
   const paths = [
     path.join(os.homedir(), '.unsloth/llama.cpp/build/bin/llama-server'),
@@ -136,6 +177,7 @@ async function run() {
     runWithSpinner('npm', ['install'], path.join(ROOT, 'den'),  'backend'),
     runWithSpinner('npm', ['install'], path.join(ROOT, 'neko'), 'frontend'),
   ]);
+  ensureNativeRuntimeDeps();
 
   // llama-server
   log('');

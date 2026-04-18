@@ -52,8 +52,8 @@ cp .env.example .env
 Edit `.env` with your values. Minimum required to boot:
 
 ```env
-PORT=3000
-FRONTEND_URL=http://localhost:5173
+PORT=8716
+FRONTEND_URL=http://localhost:8717
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
@@ -68,7 +68,7 @@ AI_MODEL=gpt-4o
 npm run dev
 ```
 
-Server starts at `http://localhost:3000`.
+Server starts at `http://localhost:8716`.
 
 ### Run (production)
 
